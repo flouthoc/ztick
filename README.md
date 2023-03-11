@@ -1,7 +1,11 @@
 # ztick
 Tiny notes app written in Zig and Gtk4
 
+* Render Ubuntu
 ![Image](../main/assets/ztick.png?raw=true)
+
+* Render Fedora
+![Image](../main/assets/zote_screen2.png?raw=true)
 
 ## Build
 
