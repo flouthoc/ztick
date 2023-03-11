@@ -1,5 +1,7 @@
 # ztick
-Tiny notes app written in Zig and Gtk4
+Tiny notes app written in Zig and Gtk4.
+
+Motivation for writing this app is majorly personal use and learning zig. I hope it helps other folks to learn zig.
 
 * Render Ubuntu
 ![Image](../main/assets/ztick.png?raw=true)
