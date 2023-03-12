@@ -4,6 +4,7 @@ const fs = std.fs;
 
 var stick_idx: i32 = 1;
 var last_deleted_idx: i32 = -1;
+var max_notes: i32 = 100;
 
 fn add_note(stack: *gtkc.GtkWidget) callconv(.C) void {
     var stick_idx_before: i32 = -1;
@@ -37,7 +38,7 @@ fn delete_note(stack: *gtkc.GtkWidget) callconv(.C) void {
     const allocator = std.heap.page_allocator;
     // TODO: move this to function
     var str = std.fmt.allocPrint(allocator, "Page{d}", .{i}) catch "format failed";
-    while (i <= 100) {
+    while (i <= max_notes) {
         str = std.fmt.allocPrint(allocator, "Page{d}", .{i}) catch "format failed";
         const name_tag = gtkc.gtk_text_tag_table_lookup(tag_table, str.ptr);
         if (name_tag != null) {
@@ -51,7 +52,7 @@ fn delete_note(stack: *gtkc.GtkWidget) callconv(.C) void {
     _ = gtkc.gtk_stack_remove(@ptrCast(*gtkc.GtkStack, stack), widget);
 }
 
-fn add_note_manually(stack: *gtkc.GtkWidget, buffer: *[100]u8, size: c_int, index: i32) callconv(.C) void {
+fn add_note_manually(stack: *gtkc.GtkWidget, buffer: *[4096]u8, size: c_int, index: i32) callconv(.C) void {
     stick_idx = index;
     const textbox_new = gtkc.gtk_text_view_new();
     const textbox1_buffer = gtkc.gtk_text_view_get_buffer(@ptrCast(*gtkc.GtkTextView, textbox_new));
@@ -79,7 +80,7 @@ fn write_note(textbufholder: *gtkc.GtkTextBuffer) callconv(.C) void {
     const allocator = std.heap.page_allocator;
     var str = std.fmt.allocPrint(allocator, "Page{d}", .{i}) catch "format failed";
     // TODO: move this to function
-    while (i <= 100) {
+    while (i <= max_notes) {
         str = std.fmt.allocPrint(allocator, "Page{d}", .{i}) catch "format failed";
         const name_tag = gtkc.gtk_text_tag_table_lookup(tag_table, str.ptr);
         if (name_tag != null) {
@@ -157,13 +158,13 @@ fn on_activate(app: *gtkc.GtkApplication, data: gtkc.gpointer) callconv(.C) void
     var i: u8 = 2;
     const allocator = std.heap.page_allocator;
     var str = std.fmt.allocPrint(allocator, "Page{d}", .{i}) catch "format failed";
-    while (i <= 100) {
+    while (i <= max_notes) {
         str = std.fmt.allocPrint(allocator, "Page{d}", .{i}) catch "format failed";
         const file_local = std.fs.cwd().openFile(
             str,
             .{},
         ) catch break;
-        var buffer_local: [100]u8 = undefined;
+        var buffer_local: [4096]u8 = undefined;
         _ = file_local.seekTo(0) catch break;
         const bytes_read_local = file_local.readAll(&buffer_local) catch break;
         var size_u_local: c_int = 0;
