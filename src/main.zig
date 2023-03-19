@@ -5,6 +5,7 @@ const fs = std.fs;
 var stick_idx: i32 = 1;
 var last_deleted_idx: i32 = -1;
 var max_notes: i32 = 100;
+var ztickdir: fs.Dir = fs.Dir{ .fd = -1 };
 
 fn add_note(stack: *gtkc.GtkWidget) callconv(.C) void {
     var stick_idx_before: i32 = -1;
@@ -48,7 +49,7 @@ fn delete_note(stack: *gtkc.GtkWidget) callconv(.C) void {
         i += 1;
     }
     last_deleted_idx = i;
-    _ = fs.cwd().deleteFile(str) catch null;
+    _ = ztickdir.deleteFile(str) catch null;
     _ = gtkc.gtk_stack_remove(@ptrCast(*gtkc.GtkStack, stack), widget);
 }
 
@@ -92,7 +93,7 @@ fn write_note(textbufholder: *gtkc.GtkTextBuffer) callconv(.C) void {
     if (found) {
         const data_as_slice: []const u8 = std.mem.span(text);
         if (std.mem.startsWith(u8, data_as_slice, "")) {
-            const file = fs.cwd().createFile(
+            const file = ztickdir.createFile(
                 str,
                 .{ .read = true },
             ) catch return;
@@ -138,11 +139,17 @@ fn on_activate(app: *gtkc.GtkApplication, data: gtkc.gpointer) callconv(.C) void
     _ = gtkc.g_signal_connect_data(button, "clicked", @ptrCast(gtkc.GCallback, &add_note), stack, null, gtkc.G_CONNECT_SWAPPED);
     _ = gtkc.g_signal_connect_data(button_delete, "clicked", @ptrCast(gtkc.GCallback, &delete_note), stack, null, gtkc.G_CONNECT_SWAPPED);
 
-    _ = std.fs.cwd().createFile(
+    _ = std.fs.cwd().makeDir(".ztick-data") catch null;
+    ztickdir = std.fs.cwd().openDir(
+        ".ztick-data",
+        .{ .access_sub_paths = true },
+    ) catch return;
+
+    _ = ztickdir.createFile(
         "Page1",
         .{ .truncate = false },
     ) catch return;
-    const file = std.fs.cwd().openFile(
+    const file = ztickdir.openFile(
         "Page1",
         .{},
     ) catch return;
@@ -160,7 +167,7 @@ fn on_activate(app: *gtkc.GtkApplication, data: gtkc.gpointer) callconv(.C) void
     var str = std.fmt.allocPrint(allocator, "Page{d}", .{i}) catch "format failed";
     while (i <= max_notes) {
         str = std.fmt.allocPrint(allocator, "Page{d}", .{i}) catch "format failed";
-        const file_local = std.fs.cwd().openFile(
+        const file_local = ztickdir.openFile(
             str,
             .{},
         ) catch break;
