@@ -1,13 +1,12 @@
 const std = @import("std");
-const Build = std.build;
 
-pub fn build(b: *Build) void {
+pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
     const exe = b.addExecutable(.{
         .name = "main",
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .optimize = optimize,
         .target = target,
     });
@@ -16,6 +15,7 @@ pub fn build(b: *Build) void {
     exe.linkSystemLibrary("gtk4");
     b.installArtifact(exe);
 
-    const run = b.addRunArtifact(exe);
-    run.step.dependOn(b.getInstallStep());
+    const run_cmd = b.addRunArtifact(exe);
+    const run_step = b.step("run", "Run the app");
+    run_step.dependOn(&run_cmd.step);
 }
