@@ -21,7 +21,7 @@ fn add_note(stack: *gtkc.GtkWidget) callconv(.C) void {
     gtkc.gtk_widget_set_hexpand(textbox_new, 1);
     gtkc.gtk_widget_set_vexpand(textbox_new, 1);
     const allocator = std.heap.page_allocator;
-    var str = std.fmt.allocPrint(allocator, "Page{d}", .{stick_idx}) catch "format failed";
+    const str = std.fmt.allocPrint(allocator, "Page{d}", .{stick_idx}) catch "format failed";
     _ = gtkc.gtk_text_buffer_create_tag(textbox1_buffer, str.ptr, null);
     _ = gtkc.gtk_stack_add_titled(@ptrCast(stack), @ptrCast(textbox_new), str.ptr, str.ptr);
     _ = gtkc.g_signal_connect_data(textbox1_buffer, "changed", @ptrCast(&write_note), textbox1_buffer, null, gtkc.G_CONNECT_SWAPPED);
@@ -60,7 +60,7 @@ fn add_note_manually(stack: *gtkc.GtkWidget, buffer: *[4096]u8, size: c_int, ind
     gtkc.gtk_widget_set_hexpand(textbox_new, 1);
     gtkc.gtk_widget_set_vexpand(textbox_new, 1);
     const allocator = std.heap.page_allocator;
-    var str = std.fmt.allocPrint(allocator, "Page{d}", .{stick_idx}) catch "format failed";
+    const str = std.fmt.allocPrint(allocator, "Page{d}", .{stick_idx}) catch "format failed";
     _ = gtkc.gtk_text_buffer_create_tag(textbox1_buffer, str.ptr, null);
     _ = gtkc.gtk_stack_add_titled(@ptrCast(stack), @ptrCast(textbox_new), str.ptr, str.ptr);
     gtkc.gtk_text_buffer_set_text(textbox1_buffer, buffer, size);
@@ -68,12 +68,12 @@ fn add_note_manually(stack: *gtkc.GtkWidget, buffer: *[4096]u8, size: c_int, ind
 }
 
 fn write_note(textbufholder: *gtkc.GtkTextBuffer) callconv(.C) void {
-    var textbuffer = @as(*gtkc.GtkTextBuffer, textbufholder);
+    const textbuffer = @as(*gtkc.GtkTextBuffer, textbufholder);
     var start: gtkc.GtkTextIter = undefined;
     var end: gtkc.GtkTextIter = undefined;
     gtkc.gtk_text_buffer_get_start_iter(textbuffer, &start);
     gtkc.gtk_text_buffer_get_end_iter(textbuffer, &end);
-    var text = gtkc.gtk_text_buffer_get_text(textbuffer, &start, &end, 0);
+    const text = gtkc.gtk_text_buffer_get_text(textbuffer, &start, &end, 0);
 
     const tag_table = gtkc.gtk_text_buffer_get_tag_table(textbuffer);
     var i: u8 = 1;
